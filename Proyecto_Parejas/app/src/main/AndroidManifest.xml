@@ -14,35 +14,35 @@
         android:theme="@style/Theme.Proyecto_Parejas"
         tools:targetApi="31">
         <activity
-            android:name=".Alimentos"
+            android:name=".home.Alimentos"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".Familia"
+            android:name=".home.Familia"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".Saludos"
+            android:name=".home.Saludos"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".Colores"
+            android:name=".home.Colores"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".Numero"
+            android:name=".home.Numero"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
