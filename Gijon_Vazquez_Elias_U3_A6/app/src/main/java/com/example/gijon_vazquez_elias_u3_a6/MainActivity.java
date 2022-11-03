@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                                 textview.setText(Text);
                                 //empezamos a dar indicaciones al usuario de la identificado de la imagen
                                 Speaker.speak(Text, TextToSpeech.QUEUE_FLUSH, null);
-                                //mientras este hablando
+                                //esperamos a que termine de hablar
                                 boolean speakingEnd = Speaker.isSpeaking();
                                 do{
                                     speakingEnd = Speaker.isSpeaking();
@@ -195,26 +195,14 @@ public class MainActivity extends AppCompatActivity {
                                                     RequestCameraPermissionID);
                                             return;
                                         }
-                                        
+                                        //Reiniciamos la interpretacion de la camara
                                         camaraSource.start(camaraview.getHolder());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                               /*camaraSource.start(camaraview.getHolder());
-                               as= new CountDownTimer(10000, 100) {
-                                    int progreso = 100; // Variable que va a ir disminuyendo del progreso
-                                    @Override
-                                    public void onTick(long millisUntilFinished) {
-                                        progreso -= (1);
-                                    }
-
-                                    @Override
-                                    public void onFinish() {
-                                        Speaker.speak(Text,TextToSpeech.QUEUE_FLUSH,null);
-                                    }
-                                }.start();*/
                             }
 
+                            //Detenemos el hilo de camara
                             @Override
                             protected void finalize() throws Throwable {
                                 //Speaker.speak(Text,TextToSpeech.QUEUE_FLUSH,null);
@@ -228,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //detenemos el speaker
     @Override
     protected void onDestroy() {
         if(Speaker!=null){
