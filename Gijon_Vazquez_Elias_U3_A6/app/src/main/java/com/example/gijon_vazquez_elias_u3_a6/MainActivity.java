@@ -5,12 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.SurfaceHolder;
@@ -26,6 +24,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    //Declaramos variables de control de evento camara y view camara, ademas del campo texto de referencia y el speaker para leerle al usuario la informacion
     SurfaceView camaraview;
     CountDownTimer as;
     TextView textview;
@@ -34,9 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private TextToSpeech Speaker;
     String Text;
 
+    //Creamos el metodo de reconocimiento de poder utilizar la camara del usuario
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
         switch (requestCode) {
             case RequestCameraPermissionID: {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -44,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                     try {
+                        //Iniciamos la camara y proyectamos en el view de la camara
                         camaraSource.start(camaraview.getHolder());
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    //Inicializamos y vinculameos componentes del xml al elemento logico
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,10 +62,13 @@ public class MainActivity extends AppCompatActivity {
         camaraview = findViewById(R.id.surface_view);
         textview = findViewById(R.id.text_view);
 
+        //Creamos un Objeto de la clase TextToSpeech que se encargara de interpretar el string detectado por la camara
         Speaker = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            //Al inicializar y acceder
             @Override
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
+                    //Identificamos el lenguaje del texto detectado
                     int result = Speaker.setLanguage(Locale.getDefault());
                     if (result == TextToSpeech.LANG_MISSING_DATA
                             || result == TextToSpeech.LANG_NOT_SUPPORTED) {
@@ -105,16 +109,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Creamos el  objeto de la clase textRecognizer
         TextRecognizer textRecognizer = new TextRecognizer.Builder(getApplicationContext()).build();
+        //Validamos las librerias del grade
         if (!textRecognizer.isOperational()) {
             Log.w("MainActivity", "Detector dependencies are not yet available");
         } else {
+            //configuramos la imagen que presentaremos en el Camaraview, con frecuencia de fotos por segundo, indicando que usaremos la camara trasera y permitiendo el enfoque.
             camaraSource = new CameraSource.Builder(getApplicationContext(), textRecognizer)
                     .setFacing(CameraSource.CAMERA_FACING_BACK)
                     .setRequestedPreviewSize(1280, 1024)
                     .setRequestedFps(200.0f)
                     .setAutoFocusEnabled(true)
                     .build();
+            //Despues de construir el objeto donde pedimos el permiso al usuario de la camara
             camaraview.getHolder().addCallback(new SurfaceHolder.Callback() {
                 @Override
                 public void surfaceCreated(@NonNull SurfaceHolder holder) {
@@ -142,45 +150,57 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            //Al reconocedor de texto le damos propiedades
             textRecognizer.setProcessor(new Detector.Processor<TextBlock>() {
                 @Override
                 public void release() {
 
                 }
 
+                //Al reconocedor de texto le damos propiedades a cuando identifija algo
                 @Override
                 public void receiveDetections(@NonNull Detector.Detections<TextBlock> detections) {
+                    //le indicamos que queremos bloques de texto
                     final SparseArray<TextBlock> items = detections.getDetectedItems();
+                    //que realizae mientras el tamaña sea difente a 0
                     if (items.size() != 0) {
                         textview.post(new Runnable() {
+                            //mientras se ejecute
                             @Override
                             public void run() {
+                                //cree y concatene el texto que identifico
                                 StringBuilder stringBuilder = new StringBuilder();
                                 for (int i = 0; i < items.size(); i++) {
                                     TextBlock item = items.valueAt(i);
                                     stringBuilder.append(item.getValue());
                                     stringBuilder.append("\n");
                                 }
-                                //camaraSource.stop();
+                                //detenemos la interpretacion
+                                camaraSource.stop();
+                                //pasamos el texto al tipo string
                                 Text = stringBuilder.toString();
+                                //colocamos la guia
                                 textview.setText(Text);
+                                //empezamos a dar indicaciones al usuario de la identificado de la imagen
                                 Speaker.speak(Text, TextToSpeech.QUEUE_FLUSH, null);
+                                //mientras este hablando
                                 boolean speakingEnd = Speaker.isSpeaking();
                                 do{
                                     speakingEnd = Speaker.isSpeaking();
                                 } while (speakingEnd);
-                                 /*    try {
+                                     try {
                                         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                                             ActivityCompat.requestPermissions(MainActivity.this,
                                                     new String[]{Manifest.permission.CAMERA},
                                                     RequestCameraPermissionID);
                                             return;
                                         }
+                                        
                                         camaraSource.start(camaraview.getHolder());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                               //camaraSource.start(camaraview.getHolder());
+                               /*camaraSource.start(camaraview.getHolder());
                                as= new CountDownTimer(10000, 100) {
                                     int progreso = 100; // Variable que va a ir disminuyendo del progreso
                                     @Override
@@ -207,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
-
 
     @Override
     protected void onDestroy() {
